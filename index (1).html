@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>UNCCD institutional and financing landscape</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F2F4F7; --surface:#FFFFFF; --text:#1A2433; --muted:#566273; --line:#98A2B0; --rule:#DCE1E8;
+  --gov:#1B365D; --fin:#0A6FA8; --impl:#23776F; --ext:#5A6A80; --nat:#B4BFCB; --form:#BFDAD6; --notefill:#FFFFFF; --un:#009EDB;
+  --gov-ink:#1B365D; --fin-ink:#0A5F90; --impl-ink:#1D645D; --ext-ink:#4A596D; --nat-ink:#556170;
+  --overlay-red:#C8102E; --overlay-amber:#E0A21B; --overlay-amber-ink:#2A1E05; --overlay-grey:#7C8592;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0F151C; --surface:#17212B; --text:#E4E9EF; --muted:#9DA8B6; --line:#687485; --rule:#2A3542;
+    --notefill:#223040; --form:#8FB9B3;
+    --gov-ink:#9FBBE0; --fin-ink:#7CC3EE; --impl-ink:#86CFC5; --ext-ink:#B6C2D2; --nat-ink:#BAC3CE;
+    --overlay-red:#EF4A5F; --overlay-grey:#8A94A2;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0F151C; --surface:#17212B; --text:#E4E9EF; --muted:#9DA8B6; --line:#687485; --rule:#2A3542;
+  --notefill:#223040; --form:#8FB9B3;
+  --gov-ink:#9FBBE0; --fin-ink:#7CC3EE; --impl-ink:#86CFC5; --ext-ink:#B6C2D2; --nat-ink:#BAC3CE;
+  --overlay-red:#EF4A5F; --overlay-grey:#8A94A2;
+}
+html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:border-box}
+body{
+  margin:0;height:100%;background:var(--bg);color:var(--text);
+  font-family:"Roboto",system-ui,-apple-system,"Segoe UI",Arial,sans-serif;
+  display:grid;grid-template-columns:minmax(0,1fr) 380px;overflow:hidden;
+}
+#stage{position:relative;min-height:0;min-width:0}
+svg#map{width:100%;height:100%;display:block;cursor:zoom-out;user-select:none;-webkit-user-select:none}
+svg#map.at-root{cursor:default}
+
+.cat-gov{--c:var(--gov);--ink:var(--gov-ink);--on:#FFFFFF}
+.cat-fin{--c:var(--fin);--ink:var(--fin-ink);--on:#FFFFFF}
+.cat-impl{--c:var(--impl);--ink:var(--impl-ink);--on:#FFFFFF}
+.cat-ext{--c:var(--ext);--ink:var(--ext-ink);--on:#FFFFFF}
+.cat-nat{--c:var(--nat);--ink:var(--nat-ink);--on:#1A2433}
+.cat-form{--c:var(--form);--ink:var(--impl-ink);--on:#10231F}
+.cat-note{--c:var(--notefill);--ink:var(--text);--on:var(--text)}
+
+.node{cursor:pointer;outline:none}
+.node > .disc{fill:var(--c);stroke:var(--surface);stroke-width:2;vector-effect:non-scaling-stroke;transition:fill-opacity .45s,stroke .2s}
+.cat-form > .disc{stroke:var(--impl);stroke-dasharray:6 4}
+.cat-note > .disc{stroke:var(--line)}
+.node.key:not(.open) > .disc{stroke:var(--un);stroke-width:5}
+.node:not(.open):hover > .disc{filter:brightness(1.12)}
+.node.open{cursor:zoom-out}
+.node.open > .disc{fill-opacity:.07;stroke:var(--c);stroke-width:1.5}
+.node.selected > .disc{stroke:var(--text);stroke-width:3.5}
+.node:focus-visible > .disc{stroke:var(--text);stroke-width:3;stroke-dasharray:5 3}
+
+.summary text{fill:var(--on);text-anchor:middle;pointer-events:none}
+.summary .lbl{font-weight:700;letter-spacing:-.005em}
+.summary .sub{font-weight:400;opacity:.92}
+.summary .tag{font-weight:400;font-style:italic;opacity:.88}
+.header text{fill:var(--ink);text-anchor:middle;font-weight:700;pointer-events:none}
+.summary,.header{transition:opacity .4s}
+.node > .header{opacity:0}
+.node.open > .header{opacity:1}
+.node.open > .summary{opacity:0}
+.kids{opacity:0;pointer-events:none;transition:opacity .5s}
+.kids.show{opacity:1;pointer-events:auto}
+
+.arrows{transition:opacity .4s}
+.arrows.dim{opacity:.1}
+.arrows line{stroke:var(--line);stroke-width:1.8;vector-effect:non-scaling-stroke}
+.arrows line.dash{stroke-dasharray:6 5}
+.arrows text{fill:var(--muted);font-size:16px;text-anchor:middle;font-style:italic}
+#arrowhead path{fill:var(--line)}
+
+
+
+/* map chrome */
+.controls{position:absolute;left:16px;bottom:16px;display:flex;gap:8px}
+.btn,.hint{
+  font:inherit;font-size:14px;border:1px solid var(--rule);background:var(--surface);color:var(--text);
+  padding:8px 14px;border-radius:4px;
+}
+.btn{cursor:pointer}
+.btn:hover{border-color:var(--line)}
+.btn:focus-visible,.panel button:focus-visible,.modal button:focus-visible{outline:2px solid var(--un);outline-offset:2px}
+.controls[hidden]{display:none}
+.hint{position:absolute;left:16px;top:16px;color:var(--muted);transition:opacity .4s;pointer-events:none}
+.hint.gone{opacity:0}
+
+
+/* panel */
+.panel{background:var(--surface);border-left:1px solid var(--rule);overflow-y:auto;padding:24px 26px 32px;min-height:0}
+.crumbs{display:flex;flex-wrap:wrap;gap:4px 6px;align-items:center;font-size:13.5px;color:var(--muted);margin-bottom:20px;min-height:20px}
+.crumbs button{font:inherit;background:none;border:0;padding:2px 0;color:var(--muted);cursor:pointer;text-decoration:underline;text-underline-offset:3px;text-decoration-color:var(--rule)}
+.crumbs button:hover{color:var(--text)}
+.crumbs .here{color:var(--text);font-weight:500}
+.crumbs .sep{opacity:.5}
+
+.panel h1{font-size:26px;line-height:1.15;margin:0 0 10px;font-weight:700;letter-spacing:-.01em;color:var(--gov-ink)}
+.panel h2{font-size:22px;line-height:1.2;margin:0 0 6px;font-weight:700;color:var(--gov-ink)}
+.panel .lede{font-size:15.5px;color:var(--muted);margin:0 0 14px;line-height:1.45}
+.panel .chip{display:inline-block;font-size:13px;border:1px solid var(--rule);border-radius:4px;padding:3px 10px;margin:0 0 14px;color:var(--text)}
+.panel .body{font-size:15px;line-height:1.6}
+.panel .body p{margin:0 0 12px}
+.panel .body ul{margin:0 0 12px;padding-left:18px}
+.panel .body li{margin:0 0 6px}
+.panel h3{font-size:13.5px;font-weight:500;color:var(--muted);margin:22px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--rule)}
+.swatch{display:inline-block;width:12px;height:12px;border-radius:50%;background:var(--c);flex:none;border:1px solid var(--rule)}
+.cat-form.swatch{border:1.5px dashed var(--impl)}
+.list{display:flex;flex-direction:column;gap:2px}
+.list button{display:flex;gap:10px;align-items:center;text-align:left;font:inherit;font-size:14.5px;background:none;border:0;border-radius:4px;padding:7px 8px;margin:0 -8px;color:var(--text);cursor:pointer}
+.list button:hover{background:var(--bg)}
+.legend{display:flex;flex-direction:column;gap:8px;font-size:14px}
+.legend div{display:flex;gap:10px;align-items:center}
+.foot{font-size:12.5px;color:var(--muted);margin-top:26px;line-height:1.5}
+
+
+
+
+
+@media (max-width: 760px){
+  body{grid-template-columns:1fr;grid-template-rows:60% 40%}
+  .panel{border-left:0;border-top:1px solid var(--rule);padding:18px 18px 28px}
+  .panel h1{font-size:22px}.panel h2{font-size:20px}
+  .hint{display:none}
+  #overlayToggle{right:10px;top:10px;font-size:13px}
+  .controls{left:10px;bottom:10px}
+  .modal{padding:10px}.mcard{padding:18px}
+}
+@media (prefers-reduced-motion: reduce){
+  .summary,.header,.kids,.arrows,.node > .disc,.overlay{transition:none}
+}
+</style>
+</head>
+<body>
+<div id="stage">
+  <svg id="map" class="at-root" role="group" aria-label="Interactive map of the UNCCD institutional and financing landscape">
+    <defs>
+      <marker id="arrowhead" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto-start-reverse">
+        <path d="M0,0 L10,5 L0,10 z"/>
+      </marker>
+    </defs>
+    <g id="world"></g>
+  </svg>
+  <div class="hint" id="hint">Select any element to explore</div>
+  
+  <div class="controls" id="controls" hidden>
+    <button class="btn" id="btnOut" type="button">Zoom out</button>
+    <button class="btn" id="btnHome" type="button">Overview</button>
+  </div>
+</div>
+<aside class="panel" id="panel" aria-live="polite">
+  
+  <nav class="crumbs" id="crumbs" aria-label="Where you are"></nav>
+  <div id="pbody"></div>
+</aside>
+
+
+<script>
+const DATA = [
+{id:'unccd',x:800,y:95,r:80,cat:'gov',label:'UNCCD',sub:'Mandate and governance',
+ desc:'<p>The UN Convention to Combat Desertification covers desertification, land degradation and drought. It has 197 Parties.</p><p>Its Strategic Framework runs to 2030 with five objectives: healthier ecosystems and land degradation neutrality, better living conditions for affected people, drought resilience, global environmental benefits, and mobilising resources. Work on a post-2030 framework began at COP16.</p>',
+ children:[
+  {id:'cop',cat:'gov',label:'COP',sub:'Supreme decision-making body',
+   desc:'<p>The Conference of the Parties is the political decision-maker. It agrees mandates, programmes, budgets and priorities.</p><p>COP decisions are what give the drought, rangelands and other programmes their political legitimacy.</p>'},
+  {id:'sec',cat:'gov',label:'Secretariat',sub:'Bonn',
+   desc:'<p>Supports the Convention process, coordinates implementation, advocates for the land agenda and gives technical and institutional support.</p><p>It also hosts the secretariats of IDRA and the Riyadh Partnership.</p>'},
+  {id:'cric',cat:'gov',label:'CRIC',sub:'Implementation review',
+   desc:'<p>The Committee for the Review of the Implementation of the Convention reviews how the Convention is actually being implemented, including financing and country progress, and feeds that back to the COP.</p>'},
+  {id:'cst',cat:'gov',label:'CST',sub:'Scientific advice',
+   desc:'<p>The Committee on Science and Technology advises the COP. Its Science-Policy Interface connects research with decision-making.</p>'}
+ ]},
+
+{id:'money',x:800,y:335,r:112,cat:'fin',label:'Finance and\nresource\nmobilisation',sub:'GM, GEF and Business4Land',
+ desc:'<p>Two distinct functions should be differentiated:</p><ul><li><b>Global Mechanism</b>: supports countries in mobilising and structuring resources.</li><li><b>GEF</b>: provides financing as the formal financial mechanism of the Convention.</li></ul><p>Neither operates as a large-scale implementing agency.</p>',
+ children:[
+  {id:'gm',cat:'fin',label:'Global\nMechanism',sub:'Resource mobilisation',tag:'Not a fund',
+   desc:'<p>Set up under Article 21 of the Convention. It helps countries mobilise resources, set land degradation neutrality targets and turn them into investable programmes.</p><p>It catalyses financial vehicles without necessarily running them: it initiated the LDN Fund (now managed by Mirova), leads operations for the Riyadh Partnership and builds the Rangelands project portfolio.</p>'},
+  {id:'gef',cat:'fin',label:'GEF',sub:'Financial mechanism',tag:'Since 2010',
+   desc:'<p>The Global Environment Facility became a financial mechanism of UNCCD in 2010. It finances implementation through its land degradation focal area and integrated programmes, working through implementing agencies such as UNEP, UNDP and FAO.</p><p>It is also a strategic partner of DRIF and gave USD 3.3m to coordinate the Rangelands portfolio through the COP17 Legacy Project.</p>'},
+  {id:'b4l',cat:'fin',label:'Business\n4Land',sub:'Private sector engagement',
+   desc:'<p>UNCCD’s private-sector platform, with three pillars: business and value-chain action, finance, and advocacy.</p><p>It was instrumental in developing DRIF, the drought investment facility.</p>'},
+  {id:'types',cat:'note',label:'Financing\nterminology',sub:'Fund, pledge, portfolio, target',
+   desc:'<p>Financial figures associated with UNCCD refer to different instruments and should not be compared directly.</p><ul><li><b>Capitalised fund</b>: resources pooled in a financing vehicle. Example: the LDN Fund.</li><li><b>Pledged commitment</b>: financing committed by partners, often disbursed through their own channels. Example: the USD 12.15bn linked to the Riyadh Partnership.</li><li><b>Project portfolio</b>: the aggregate value of projects financed from multiple sources. Example: Rangelands’ USD 1.2bn.</li><li><b>Mobilisation target</b>: the amount a vehicle aims to raise. Example: DRIF’s roughly USD 400m.</li></ul>'}
+ ]},
+
+{id:'drought',x:420,y:640,r:175,cat:'impl',key:true,label:'Drought\nresilience',sub:'Planning, alliances and financing',
+ desc:'<p>The drought resilience architecture comprises four distinct but complementary structures:</p><ul><li><b>Drought Initiative</b>: national drought planning.</li><li><b>IDRA and IDRO</b>: political coalition, and the data behind it.</li><li><b>Riyadh Partnership</b>: country readiness, finance and implementation.</li><li><b>DRIF</b>: a separate blended-finance investment vehicle.</li></ul><p>Together, they form the principal link between drought policy, large-scale financing and country-level implementation.</p>',
+ children:[
+  {id:'rgdrp',at:[-0.25,0.1,0.45],cat:'fin',label:'Riyadh\nPartnership',sub:'Readiness, investment, knowledge',tag:'~74 eligible countries',
+   desc:'<p>The Riyadh Global Drought Resilience Partnership was launched by Saudi Arabia at COP16 in Riyadh in December 2024, under UNCCD and Global Mechanism leadership.</p><p>It aims to move countries from reactive drought relief to proactive resilience investment, connecting about 74 vulnerable low and lower-middle income countries to technical, financial and knowledge resources.</p><p>The institutional shell is already taken (UNCCD hosts the secretariat, the UN MPTF Office is trustee), but the downstream delivery architecture is still being built.</p>',
+   children:[
+    {id:'rg-gov',cat:'gov',label:'Governance',sub:'Steering and oversight',
+     desc:'<ul><li>Assembly of Partners</li><li>12-member Steering Committee</li><li>Secretariat hosted by UNCCD in Bonn (already allocated)</li><li>UN Multi-Partner Trust Fund Office as fund trustee (already allocated)</li><li>An independent review function, envisaged</li></ul>'},
+    {id:'rg-read',cat:'impl',label:'Readiness\nFacility',sub:'Country capacity and planning',
+     desc:'<p>Pillar one. Supports country capacity, planning and preparation so that countries can bring forward investable drought resilience programmes.</p>'},
+    {id:'rg-inv',cat:'fin',label:'Investment\nFacility',sub:'Investment mobilisation',
+     desc:'<p>Pillar two. Mobilises and connects financing for drought resilience.</p><p>Not the same thing as DRIF, which is a separate vehicle.</p>'},
+    {id:'rg-know',cat:'impl',label:'Knowledge\nPlatform',sub:'Knowledge management',
+     desc:'<p>Pillar three. Knowledge sharing and learning across partner countries.</p>'},
+    {id:'rg-pledge',cat:'fin',label:'USD\n12.15bn',sub:'Associated commitments',tag:'Pledged, not pooled',
+     desc:'<ul><li>Saudi Arabia: USD 150m in grants</li><li>Islamic Development Bank: USD 1bn</li><li>OPEC Fund: USD 1bn</li><li>Arab Coordination Group: USD 10bn</li></ul><p>This is financing associated with the Riyadh drought agenda. It is not money sitting in the Partnership’s own fund.</p>'},
+    {id:'rg-pool',cat:'fin',label:'Pooled\nfund',sub:'Proposed at COP17',tag:'Trustee: UN MPTF Office',
+     desc:'<p>The Partnership uses a dual model: pooled contributions through a trust fund, plus aligned or bilateral financing by partner institutions.</p><p>Its first Assembly at COP17 advanced a proposed pooled fund to support around 70 countries.</p>'}
+   ]},
+  {id:'di',at:[0.42,-0.3,0.2],cat:'impl',label:'Drought\nInitiative',sub:'National drought plans',
+   desc:'<p>Created in 2018. Supports national drought plans, preparedness, risk assessment, early warning and mitigation planning, plus the Drought Toolbox and regional frameworks.</p><p>It is the country-planning foundation of the drought architecture.</p>'},
+  {id:'idra',at:[0.52,0.1,0.2],cat:'impl',label:'IDRA',sub:'Political alliance',
+   desc:'<p>The International Drought Resilience Alliance was launched at UNFCCC COP27 in 2022, first led by Spain and Senegal. Its secretariat is hosted by UNCCD.</p><p>It is about political mobilisation, collaboration, knowledge and tools, not financing.</p>'},
+  {id:'idro',at:[0.4,0.5,0.18],cat:'impl',label:'IDRO',sub:'Monitoring and data',
+   desc:'<p>The International Drought Resilience Observatory grew out of IDRA and became operational around COP17.</p><p>It helps governments see where resilience gaps are and where policy and investment should go.</p>'},
+  {id:'drif',at:[0.0,0.72,0.2],cat:'fin',label:'DRIF',sub:'Blended-finance vehicle',tag:'Target: ~USD 400m',
+   desc:'<p>The Drought Resilience Investment Facility was developed through Business4Land and launched at COP17. It targets up to roughly USD 400m in public and private capital for water security, sustainable agriculture, nature-based solutions and land restoration.</p><p>On 17 September 2026, Luxembourg and UNCCD signed the agreement making it the first fund under the Luxembourg Earth Impact Fund.</p><p>It complements the Riyadh Partnership but is a separate vehicle.</p>'}
+ ]},
+
+{id:'land',x:800,y:640,r:140,cat:'impl',label:'Land\nrestoration',sub:'LDN and flagship initiatives',
+ desc:'<p>This component links national target setting to financing and flagship programmes.</p><p>Countries establish land degradation neutrality targets, the Global Mechanism supports their translation into programmes, and flagship initiatives such as the Rangelands Initiative and the Peace Forest Initiative develop project pipelines financed and implemented by partners.</p>',
+ children:[
+  {id:'ldn',cat:'impl',label:'Land\nDegradation\nNeutrality',sub:'National target setting',
+   desc:'<p>A core UNCCD concept, linked to SDG 15.3. Through the LDN Target Setting Programme, countries set voluntary targets, which the Global Mechanism then helps turn into transformative projects and programmes.</p>'},
+  {id:'ldnf',cat:'fin',label:'LDN Fund',sub:'Impact investment fund',tag:'Capitalised fund',
+   desc:'<p>The Global Mechanism initiated its design, but the investment fund is managed by Mirova and its technical assistance facility by IDH.</p><p>It shows how the GM works: it creates financial architecture, then others operate it.</p>'},
+  {id:'range',cat:'impl',label:'Rangelands\nInitiative',sub:'45 projects',tag:'USD 1.2bn portfolio',
+   desc:'<p>Flagship initiative with three components: knowledge, investment and institutions.</p><p>After COP17 in Mongolia, UNCCD describes a USD 1.2bn portfolio across 45 projects. This is a portfolio, not a fund. The GEF gave USD 3.3m for coordination through the COP17 Legacy Project.</p>'},
+  {id:'pfi',cat:'impl',label:'Peace Forest\nInitiative',sub:'Restoration in fragile settings',
+   desc:'<p>Land restoration in fragile and conflict-affected settings, built around transboundary cooperation. 17 potential locations involving 44 countries.</p><p>UNCCD gives seed and technical support; full projects need outside finance and implementers. Pilots include Central Asia (UNDP) and Bosnia and Herzegovina (FAO), and RESILAND Central Asia with World Bank, GEF, PROGREEN and Korean financing.</p><p>A fragility financing mechanism for Phase II is in development.</p>'}
+ ]},
+
+{id:'other',x:1180,y:640,r:135,cat:'impl',label:'Associated\ninitiatives',sub:'Partner-led or co-hosted',
+ desc:'<p>These initiatives are closely associated with UNCCD but have distinct ownership, origins or financing arrangements. They should be distinguished from programmes established under the Convention.</p>',
+ children:[
+  {id:'ggw',cat:'impl',label:'Great\nGreen Wall',sub:'African-led',tag:'USD 19bn+ mobilised',
+   desc:'<p>An African-led restoration agenda that UNCCD supports but does not own. The Accelerator is coordinated by the Pan African Agency of the Great Green Wall.</p><p>It launched with USD 14.3bn in commitments; UNCCD now reports more than USD 19bn mobilised.</p>'},
+  {id:'g20',cat:'impl',label:'G20 Land\nInitiative',sub:'50% reduction by 2040',
+   desc:'<p>Created by the G20, not by the Convention. Its coordination office sits within the UNCCD ecosystem under the Secretariat’s administrative and financial oversight, with a steering committee of interested G20 countries and organisations including FAO and UNEP.</p>'},
+  {id:'sds',cat:'form',label:'Sand and\nDust Storms',sub:'Under development',
+   desc:'<p>A Global Implementation Initiative under the UN Decade on Combating Sand and Dust Storms, 2025 to 2034. COP17 was used to build political backing, financing and partnerships.</p><p>The mandate exists, but a large funded delivery structure does not yet.</p>'},
+  {id:'chw',cat:'impl',label:'Changwon\nInitiative',sub:'Republic of Korea, since 2011',
+   desc:'<p>Launched by the Republic of Korea with UNCCD in 2011. It has supported land degradation neutrality, science-policy work, drought tools and the development of Peace Forest.</p><p>A good example of a bilateral donor relationship that became long-running programme architecture.</p>'}
+ ]},
+
+{id:'funders',x:180,y:335,r:112,cat:'ext',label:'Financing\npartners',sub:'Bilateral and multilateral',
+ desc:'<p>Bilateral and multilateral financing partners and political sponsors, shown in relation to the components they support.</p>',
+ children:[
+  {id:'ksa',cat:'ext',label:'Saudi\nArabia',sub:'USD 150m grants',desc:'<p>COP16 Presidency. Launched the Riyadh Partnership and is its principal political backer.</p>'},
+  {id:'isdb',cat:'ext',label:'IsDB',sub:'USD 1bn',desc:'<p>The Islamic Development Bank committed USD 1bn to the Riyadh drought agenda.</p>'},
+  {id:'opec',cat:'ext',label:'OPEC\nFund',sub:'USD 1bn',desc:'<p>Committed USD 1bn to the Riyadh drought agenda.</p>'},
+  {id:'acg',cat:'ext',label:'Arab Coord.\nGroup',sub:'USD 10bn',desc:'<p>The Arab Coordination Group’s USD 10bn is the largest share of the USD 12.15bn linked to the Riyadh drought agenda.</p>'},
+  {id:'lux',cat:'ext',label:'Luxem-\nbourg',sub:'Earth Impact Fund',desc:'<p>DRIF is the first fund under the Luxembourg Earth Impact Fund, agreed on 17 September 2026.</p>'},
+  {id:'wb',cat:'ext',label:'World\nBank',sub:'Land programmes',desc:'<p>Involved in Great Green Wall financing and in RESILAND Central Asia, linked to Peace Forest work.</p>'},
+  {id:'kor',cat:'ext',label:'Republic\nof Korea',sub:'Changwon, Peace Forest',desc:'<p>The Republic of Korea and the Korea Forest Service fund the Changwon Initiative and support Peace Forest.</p>'}
+ ]},
+
+{id:'partners',x:1420,y:880,r:102,cat:'ext',label:'Implementing\npartners',sub:'UN and technical agencies',
+ desc:'<p>UN entities and technical organisations that implement projects with national governments. As UNCCD is not an implementing agency at scale, a significant share of delivery is channelled through these partners.</p>',
+ children:[
+  {id:'fao',cat:'ext',label:'FAO',sub:'Land and agriculture',desc:'<p>Drought tools, land and agriculture, rangelands, and the Peace Forest pilot in Bosnia and Herzegovina. Sits on the G20 Land Initiative steering committee.</p>'},
+  {id:'undp',cat:'ext',label:'UNDP',sub:'Land programmes',desc:'<p>Implements the Peace Forest pilot in Central Asia and many land programmes.</p>'},
+  {id:'wmo',cat:'ext',label:'WMO',sub:'Early warning',desc:'<p>Drought monitoring and early-warning architecture.</p>'},
+  {id:'gwp',cat:'ext',label:'GWP',sub:'Drought planning',desc:'<p>The Global Water Partnership supports drought planning and communities of practice.</p>'},
+  {id:'unep',cat:'ext',label:'UNEP',sub:'GEF agency',desc:'<p>A GEF implementing agency and part of wider Rio convention synergies. On the G20 Land Initiative steering committee.</p>'},
+  {id:'paa',cat:'ext',label:'PAGGW',sub:'Great Green Wall Agency',desc:'<p>The Pan African Agency of the Great Green Wall coordinates the Great Green Wall Accelerator.</p>'},
+  {id:'mir',cat:'ext',label:'Mirova\nand IDH',sub:'Fund managers',desc:'<p>Mirova manages the LDN Fund; IDH manages its technical assistance facility.</p>'}
+ ]},
+
+{id:'countries',x:800,y:915,r:90,cat:'nat',label:'National\nimplementation',sub:'Country Parties',
+ desc:'<p>All components ultimately connect to country-owned programmes, from national planning instruments and targets to investment-ready projects and implementation.</p>',
+ children:[
+  {id:'nap',cat:'nat',label:'National Action\nProgrammes',sub:'Principal instrument',desc:'<p>National Action Programmes are the Convention’s principal national implementation instruments.</p>'},
+  {id:'tgt',cat:'nat',label:'Targets\nand plans',sub:'LDN targets, drought plans',desc:'<p>Land degradation neutrality targets, national drought plans and other national priorities.</p>'},
+  {id:'tpp',cat:'nat',label:'Transformative\nprojects',sub:'Investment-ready',desc:'<p>Transformative projects and programmes: targets translated into investable proposals, often with Global Mechanism support.</p>'},
+  {id:'impl',cat:'nat',label:'Implemen-\ntation',sub:'Field-level delivery',desc:'<p>Financed projects implemented by governments with delivery partners.</p>'}
+ ]}
+];
+
+const ARROWS = [
+  ['unccd','money','mandate'],
+  ['funders','money','financing',true],
+  ['money','drought'],['money','land'],['money','other'],
+  ['drought','countries'],['land','countries'],['other','countries'],
+  ['partners','countries','implementation support',true]
+];
+
+
+const OVERLAY = /*__OVERLAY__*/null;
+
+const CAT_NAMES = {gov:'Governance and mandate',fin:'Finance and resource mobilisation',impl:'Programmes and initiatives',ext:'Financing and implementing partners',nat:'National implementation',form:'Under development'};
+
+/* ---------- LAYOUT ---------- */
+const ROOT = {id:'root',label:'Overview',children:DATA,parent:null};
+const ALL = [];
+const byId = {};
+function layoutKids(p){
+  const kids = p.children || [];
+  const auto = kids.filter(k=>!k.at);
+  const n = auto.length;
+  auto.forEach((k,i)=>{
+    if(n===1){k.x=p.x;k.y=p.y+.1*p.r;k.r=.5*p.r;return;}
+    const a = -Math.PI/2 + 2*Math.PI*i/n;
+    const ring = .52;
+    const cr = Math.min(.3, ring*Math.sin(Math.PI/n)*.96);
+    k.x = p.x + Math.cos(a)*ring*p.r;
+    k.y = p.y + .1*p.r + Math.sin(a)*ring*p.r;
+    k.r = cr*p.r;
+  });
+  kids.filter(k=>k.at).forEach(k=>{k.x=p.x+k.at[0]*p.r;k.y=p.y+k.at[1]*p.r;k.r=k.at[2]*p.r;});
+  kids.forEach(k=>{k.parent=p;ALL.push(k);byId[k.id]=k;if(k.children)layoutKids(k);});
+}
+DATA.forEach(d=>{d.parent=ROOT;ALL.push(d);byId[d.id]=d;if(d.children)layoutKids(d);});
+
+/* ---------- OVERLAY helpers ---------- */
+function overlayOf(){return null}
+
+/* ---------- RENDER ---------- */
+const NS='http://www.w3.org/2000/svg';
+const svg=document.getElementById('map');
+const world=document.getElementById('world');
+function el(tag,attrs,parent){const e=document.createElementNS(NS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);if(parent)parent.appendChild(e);return e;}
+function wrap(s,max){const words=s.split(' ');const lines=[];let cur='';words.forEach(w=>{if((cur+' '+w).trim().length>max&&cur){lines.push(cur);cur=w;}else cur=(cur+' '+w).trim();});if(cur)lines.push(cur);return lines;}
+function flat(n){return n.label.replace(/-\n/g,'').replace(/\n/g,' ');}
+
+function drawSummary(n,g){
+  const r=n.r;
+  const lines=n.label.split('\n');
+  const longest=Math.max(...lines.map(l=>l.length));
+  const fs=Math.min(r*.27, 1.42*r/(longest*.57));
+  const subL=n.sub?wrap(n.sub,20):[];
+  const subLong=subL.length?Math.max(...subL.map(l=>l.length)):1;
+  const sfs=Math.min(fs*.6, 1.45*r/(subLong*.52));
+  const tfs=n.tag?Math.min(sfs*.95, 1.45*r/(n.tag.length*.5)):0;
+  const H=lines.length*fs*1.08 + (subL.length?fs*.28+subL.length*sfs*1.25:0) + (n.tag?tfs*1.6:0);
+  let y=n.y-H/2+fs*.82;
+  lines.forEach(l=>{const t=el('text',{x:n.x,y:y,'font-size':fs,class:'lbl'},g);t.textContent=l;y+=fs*1.08;});
+  if(subL.length){y+=fs*.28-fs*1.08+sfs*1.25+fs*.1;subL.forEach(l=>{const t=el('text',{x:n.x,y:y,'font-size':sfs,class:'sub'},g);t.textContent=l;y+=sfs*1.25;});}
+  if(n.tag){y+=tfs*.45;const t=el('text',{x:n.x,y:y,'font-size':tfs,class:'tag'},g);t.textContent=n.tag;}
+}
+function drawHeader(n,g){
+  const txt=flat(n);
+  const fs=Math.min(.078*n.r, 1.15*n.r/(txt.length*.56));
+  const t=el('text',{x:n.x,y:n.y-.8*n.r+fs*.35,'font-size':fs},g);t.textContent=txt;
+}
+function drawOverlayRing(){}function drawOverlayBadges(){}
+function renderNode(n,parent){
+  const g=el('g',{class:`node cat-${n.cat}${n.key?' key':''}`,role:'button',tabindex:0,'aria-label':flat(n)+(n.children?', zoom in':', show details')},parent);
+  n.g=g;
+  if(OVERLAY) drawOverlayRing(n,el('g',{class:'overlay'},g));
+  el('circle',{cx:n.x,cy:n.y,r:n.r,class:'disc'},g);
+  drawSummary(n,el('g',{class:'summary'},g));
+  if(n.children) drawHeader(n,el('g',{class:'header'},g));
+  if(OVERLAY) drawOverlayBadges(n,el('g',{class:'overlay overlayb'},g));
+  if(n.children){
+    n.kidsG=el('g',{class:'kids'},g);
+    n.children.forEach(c=>renderNode(c,n.kidsG));
+  }
+  g.addEventListener('click',e=>{e.stopPropagation();onNode(n);});
+  g.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();e.stopPropagation();onNode(n);}});
+}
+
+const arrowsG=el('g',{class:'arrows'},world);
+ARROWS.forEach(([a,b,label,dash])=>{
+  const A=byId[a],B=byId[b];
+  const dx=B.x-A.x,dy=B.y-A.y,d=Math.hypot(dx,dy),ux=dx/d,uy=dy/d;
+  const x1=A.x+ux*(A.r+12),y1=A.y+uy*(A.r+12),x2=B.x-ux*(B.r+12),y2=B.y-uy*(B.r+12);
+  el('line',{x1,y1,x2,y2,class:dash?'dash':'','marker-end':'url(#arrowhead)'},arrowsG);
+  if(label){const t=el('text',{x:(x1+x2)/2+(Math.abs(uy)>.8?38:0),y:(y1+y2)/2+(Math.abs(uy)>.8?5:-10)},arrowsG);t.textContent=label;}
+});
+const nodesG=el('g',{},world);
+DATA.forEach(d=>renderNode(d,nodesG));
+
+/* ---------- VIEW ---------- */
+const WORLD={x:40,y:-20,w:1520,h:1040};
+let vb={...WORLD}, raf=0, focus=ROOT, selected=null, overlayOn=false;
+function fit(b){
+  const ar=(svg.clientWidth||1)/(svg.clientHeight||1);
+  let {x,y,w,h}=b;
+  if(w/h<ar){const nw=h*ar;x-=(nw-w)/2;w=nw;}else{const nh=w/ar;y-=(nh-h)/2;h=nh;}
+  return {x,y,w,h};
+}
+function boxOf(n){return n===ROOT?fit(WORLD):fit({x:n.x-n.r*1.12,y:n.y-n.r*1.12,w:n.r*2.24,h:n.r*2.24});}
+function setVB(b){vb=b;svg.setAttribute('viewBox',`${b.x} ${b.y} ${b.w} ${b.h}`);}
+function animateTo(t){
+  cancelAnimationFrame(raf);
+  if(matchMedia('(prefers-reduced-motion: reduce)').matches){setVB(t);return;}
+  const f={...vb};
+  const fc=[f.x+f.w/2,f.y+f.h/2], tc=[t.x+t.w/2,t.y+t.h/2];
+  const D=850,t0=performance.now();
+  const step=now=>{
+    const p=Math.min(1,(now-t0)/D);
+    const e=p<.5?4*p*p*p:1-Math.pow(-2*p+2,3)/2;
+    const w=f.w*Math.pow(t.w/f.w,e), h=f.h*Math.pow(t.h/f.h,e);
+    let s=e;
+    if(Math.abs(t.w-f.w)>1e-3){s=(1/w-1/f.w)/(1/t.w-1/f.w);}
+    const cx=fc[0]+(tc[0]-fc[0])*s, cy=fc[1]+(tc[1]-fc[1])*s;
+    setVB({x:cx-w/2,y:cy-h/2,w,h});
+    if(p<1)raf=requestAnimationFrame(step);
+  };
+  raf=requestAnimationFrame(step);
+}
+function pathTo(n){const a=[];while(n){a.unshift(n);n=n.parent;}return a;}
+
+function applyState(){
+  const on=new Set(pathTo(focus));
+  ALL.forEach(n=>{
+    const open=!!(n.children&&on.has(n));
+    n.g.classList.toggle('open',open);
+    if(n.kidsG)n.kidsG.classList.toggle('show',open);
+    n.g.classList.toggle('selected',n===selected);
+    const visible=n.parent===ROOT||on.has(n.parent);
+    n.g.setAttribute('tabindex',visible?0:-1);
+  });
+  arrowsG.classList.toggle('dim',focus!==ROOT);
+  svg.classList.toggle('at-root',focus===ROOT);
+  document.getElementById('controls').hidden=focus===ROOT;
+  if(focus!==ROOT)document.getElementById('hint').classList.add('gone');
+}
+function zoomTo(n){focus=n;applyState();animateTo(boxOf(n));renderCrumbs();}
+function onNode(n){
+  if(n.children){
+    if(focus===n){zoomOut();return;}
+    selected=null;zoomTo(n);showPanel(n);
+  }else{
+    selected=n;
+    if(focus!==n.parent)zoomTo(n.parent);else applyState();
+    showPanel(n);
+  }
+}
+function zoomOut(){if(focus===ROOT)return;selected=null;const p=focus.parent;zoomTo(p);showPanel(p);}
+svg.addEventListener('click',zoomOut);
+document.getElementById('btnOut').addEventListener('click',zoomOut);
+document.getElementById('btnHome').addEventListener('click',()=>{selected=null;zoomTo(ROOT);showPanel(ROOT);});
+new ResizeObserver(()=>{cancelAnimationFrame(raf);setVB(boxOf(focus));}).observe(svg);
+
+/* ---------- PANEL ---------- */
+const crumbs=document.getElementById('crumbs'), pbody=document.getElementById('pbody');
+function renderCrumbs(){
+  crumbs.innerHTML='';
+  const path=pathTo(selected||focus);
+  path.forEach((n,i)=>{
+    if(i){const s=document.createElement('span');s.className='sep';s.textContent='›';crumbs.appendChild(s);}
+    const label=n===ROOT?'Overview':flat(n);
+    if(i===path.length-1){const s=document.createElement('span');s.className='here';s.textContent=label;s.setAttribute('aria-current','location');crumbs.appendChild(s);}
+    else{const b=document.createElement('button');b.type='button';b.textContent=label;b.onclick=()=>{selected=null;zoomTo(n);showPanel(n);};crumbs.appendChild(b);}
+  });
+}
+function itemButton(n,extra){
+  const b=document.createElement('button');b.type='button';
+  b.innerHTML=`<span class="swatch cat-${n.cat}"></span><span>${flat(n)}</span>${extra||''}`;
+  b.onclick=()=>onNode(n);return b;
+}
+function overlaySection(){return null}
+function showPanel(n){
+  renderCrumbs();
+  pbody.innerHTML='';
+  if(n===ROOT){
+    pbody.innerHTML=`<h1>UNCCD institutional and financing landscape</h1>
+    <p class="lede">An overview of how mandates, financing and programmes connect, from the Convention to national implementation.</p>
+    <div class="body"><p>The map reads from top to bottom. The Convention and its governing bodies set the mandate; the finance and resource mobilisation architecture, together with financing partners, channels resources into thematic programmes; and Country Parties implement them with the support of implementing partners.</p>
+    <p>Select any element to view its components. Select an individual component for a description. To return, select an empty area, press Escape or use the navigation buttons.</p></div>
+    <h3>Legend</h3><div class="legend">${Object.entries(CAT_NAMES).map(([k,v])=>`<div><span class="swatch cat-${k}"></span>${v}</div>`).join('')}</div>`;
+
+    const h3=document.createElement('h3');h3.textContent='Main components';pbody.appendChild(h3);
+    const l=document.createElement('div');l.className='list';DATA.forEach(d=>l.appendChild(itemButton(d)));pbody.appendChild(l);
+    const f=document.createElement('p');f.className='foot';f.textContent='Source: UNCCD official sources, as of September 2026. Financial figures are classified by type: capitalised fund, pledged commitment, project portfolio or mobilisation target.';pbody.appendChild(f);
+    return;
+  }
+  const h=document.createElement('h2');h.textContent=flat(n);pbody.appendChild(h);
+  if(n.sub){const p=document.createElement('p');p.className='lede';p.textContent=n.sub;pbody.appendChild(p);}
+  if(n.tag){const c=document.createElement('span');c.className='chip';c.textContent=n.tag;pbody.appendChild(c);}
+  const body=document.createElement('div');body.className='body';body.innerHTML=n.desc||'';pbody.appendChild(body);
+  const ws=overlaySection(n);if(ws)pbody.appendChild(ws);
+  if(n.children){
+    const h3=document.createElement('h3');h3.textContent='Components';pbody.appendChild(h3);
+    const l=document.createElement('div');l.className='list';n.children.forEach(c=>l.appendChild(itemButton(c)));pbody.appendChild(l);
+  }else if(n.parent&&n.parent!==ROOT){
+    const h3=document.createElement('h3');h3.textContent='Part of';pbody.appendChild(h3);
+    const l=document.createElement('div');l.className='list';l.appendChild(itemButton(n.parent));pbody.appendChild(l);
+  }
+}
+
+document.addEventListener('keydown',e=>{if(e.key==='Escape')zoomOut();});
+
+setVB(boxOf(ROOT));
+applyState();
+showPanel(ROOT);
+</script>
+</body>
+</html>
