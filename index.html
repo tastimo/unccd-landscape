@@ -6,64 +6,66 @@
 <title>UNCCD institutional and financing landscape</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#E8EDE9; --surface:#F7F9F7; --text:#1C2621; --muted:#56635B; --line:#8A968F; --rule:#D3DBD5;
-  --gov:#27476E; --fin:#C2741A; --impl:#3E7A4F; --ext:#674A8F; --nat:#69726E; --form:#B8D6BE; --notefill:#FFFFFF;
-  --gov-ink:#27476E; --fin-ink:#A35F10; --impl-ink:#2F6540; --ext-ink:#5A3E80; --nat-ink:#4F5854;
+  --bg:#F2F4F7; --surface:#FFFFFF; --text:#1A2433; --muted:#566273; --line:#98A2B0; --rule:#DCE1E8;
+  --gov:#1B365D; --fin:#0A6FA8; --impl:#23776F; --ext:#5A6A80; --nat:#B4BFCB; --form:#BFDAD6; --notefill:#FFFFFF; --un:#009EDB;
+  --gov-ink:#1B365D; --fin-ink:#0A5F90; --impl-ink:#1D645D; --ext-ink:#4A596D; --nat-ink:#556170;
+  --overlay-red:#C8102E; --overlay-amber:#E0A21B; --overlay-amber-ink:#2A1E05; --overlay-grey:#7C8592;
   box-sizing:border-box;
   padding-top:env(safe-area-inset-top,0px);
   padding-bottom:env(safe-area-inset-bottom,0px);
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
-    --bg:#131915; --surface:#1B231E; --text:#E3EAE5; --muted:#9BA8A0; --line:#6F7C75; --rule:#2C3630;
-    --notefill:#28322C; --form:#9FC4A7;
-    --gov-ink:#A3C0E4; --fin-ink:#F2B266; --impl-ink:#8FCD9F; --ext-ink:#C5AAEA; --nat-ink:#BAC3BE;
+    --bg:#0F151C; --surface:#17212B; --text:#E4E9EF; --muted:#9DA8B6; --line:#687485; --rule:#2A3542;
+    --notefill:#223040; --form:#8FB9B3;
+    --gov-ink:#9FBBE0; --fin-ink:#7CC3EE; --impl-ink:#86CFC5; --ext-ink:#B6C2D2; --nat-ink:#BAC3CE;
+    --overlay-red:#EF4A5F; --overlay-grey:#8A94A2;
   }
 }
 :root[data-theme="dark"]{
-  --bg:#131915; --surface:#1B231E; --text:#E3EAE5; --muted:#9BA8A0; --line:#6F7C75; --rule:#2C3630;
-  --notefill:#28322C; --form:#9FC4A7;
-  --gov-ink:#A3C0E4; --fin-ink:#F2B266; --impl-ink:#8FCD9F; --ext-ink:#C5AAEA; --nat-ink:#BAC3BE;
+  --bg:#0F151C; --surface:#17212B; --text:#E4E9EF; --muted:#9DA8B6; --line:#687485; --rule:#2A3542;
+  --notefill:#223040; --form:#8FB9B3;
+  --gov-ink:#9FBBE0; --fin-ink:#7CC3EE; --impl-ink:#86CFC5; --ext-ink:#B6C2D2; --nat-ink:#BAC3CE;
+  --overlay-red:#EF4A5F; --overlay-grey:#8A94A2;
 }
 html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
 *,*::before,*::after{box-sizing:border-box}
 body{
   margin:0;height:100%;background:var(--bg);color:var(--text);
-  font-family:"Instrument Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
-  display:grid;grid-template-columns:minmax(0,1fr) 370px;overflow:hidden;
+  font-family:"Roboto",system-ui,-apple-system,"Segoe UI",Arial,sans-serif;
+  display:grid;grid-template-columns:minmax(0,1fr) 380px;overflow:hidden;
 }
 #stage{position:relative;min-height:0;min-width:0}
 svg#map{width:100%;height:100%;display:block;cursor:zoom-out;user-select:none;-webkit-user-select:none}
 svg#map.at-root{cursor:default}
 
-/* categories */
 .cat-gov{--c:var(--gov);--ink:var(--gov-ink);--on:#FFFFFF}
 .cat-fin{--c:var(--fin);--ink:var(--fin-ink);--on:#FFFFFF}
 .cat-impl{--c:var(--impl);--ink:var(--impl-ink);--on:#FFFFFF}
 .cat-ext{--c:var(--ext);--ink:var(--ext-ink);--on:#FFFFFF}
-.cat-nat{--c:var(--nat);--ink:var(--nat-ink);--on:#FFFFFF}
-.cat-form{--c:var(--form);--ink:var(--impl-ink);--on:#16231A}
+.cat-nat{--c:var(--nat);--ink:var(--nat-ink);--on:#1A2433}
+.cat-form{--c:var(--form);--ink:var(--impl-ink);--on:#10231F}
 .cat-note{--c:var(--notefill);--ink:var(--text);--on:var(--text)}
 
 .node{cursor:pointer;outline:none}
 .node > .disc{fill:var(--c);stroke:var(--surface);stroke-width:2;vector-effect:non-scaling-stroke;transition:fill-opacity .45s,stroke .2s}
 .cat-form > .disc{stroke:var(--impl);stroke-dasharray:6 4}
 .cat-note > .disc{stroke:var(--line)}
-.node.key:not(.open) > .disc{stroke:var(--fin);stroke-width:5}
-.node:not(.open):hover > .disc{filter:brightness(1.1)}
+.node.key:not(.open) > .disc{stroke:var(--un);stroke-width:5}
+.node:not(.open):hover > .disc{filter:brightness(1.12)}
 .node.open{cursor:zoom-out}
-.node.open > .disc{fill-opacity:.1;stroke:var(--c);stroke-width:1.5}
+.node.open > .disc{fill-opacity:.07;stroke:var(--c);stroke-width:1.5}
 .node.selected > .disc{stroke:var(--text);stroke-width:3.5}
 .node:focus-visible > .disc{stroke:var(--text);stroke-width:3;stroke-dasharray:5 3}
 
 .summary text{fill:var(--on);text-anchor:middle;pointer-events:none}
-.summary .lbl{font-weight:650;letter-spacing:-.01em}
-.summary .sub{font-weight:450;opacity:.92}
-.summary .tag{font-weight:500;font-style:italic;opacity:.85}
-.header text{fill:var(--ink);text-anchor:middle;font-weight:650;pointer-events:none}
+.summary .lbl{font-weight:700;letter-spacing:-.005em}
+.summary .sub{font-weight:400;opacity:.92}
+.summary .tag{font-weight:400;font-style:italic;opacity:.88}
+.header text{fill:var(--ink);text-anchor:middle;font-weight:700;pointer-events:none}
 .summary,.header{transition:opacity .4s}
 .node > .header{opacity:0}
 .node.open > .header{opacity:1}
@@ -75,57 +77,66 @@ svg#map.at-root{cursor:default}
 .arrows.dim{opacity:.1}
 .arrows line{stroke:var(--line);stroke-width:1.8;vector-effect:non-scaling-stroke}
 .arrows line.dash{stroke-dasharray:6 5}
-.arrows text{fill:var(--muted);font-size:17px;text-anchor:middle;font-style:italic}
+.arrows text{fill:var(--muted);font-size:16px;text-anchor:middle;font-style:italic}
 #arrowhead path{fill:var(--line)}
 
-/* map controls */
+
+
+/* map chrome */
 .controls{position:absolute;left:16px;bottom:16px;display:flex;gap:8px}
-.controls button,.hint{
+.btn,.hint{
   font:inherit;font-size:14px;border:1px solid var(--rule);background:var(--surface);color:var(--text);
-  padding:8px 14px;border-radius:999px;
+  padding:8px 14px;border-radius:4px;
 }
-.controls button{cursor:pointer}
-.controls button:hover{border-color:var(--line)}
-.controls button:focus-visible,.panel button:focus-visible{outline:2px solid var(--text);outline-offset:2px}
+.btn{cursor:pointer}
+.btn:hover{border-color:var(--line)}
+.btn:focus-visible,.panel button:focus-visible,.modal button:focus-visible{outline:2px solid var(--un);outline-offset:2px}
 .controls[hidden]{display:none}
 .hint{position:absolute;left:16px;top:16px;color:var(--muted);transition:opacity .4s;pointer-events:none}
 .hint.gone{opacity:0}
 
+
 /* panel */
 .panel{background:var(--surface);border-left:1px solid var(--rule);overflow-y:auto;padding:24px 26px 32px;min-height:0}
-.crumbs{display:flex;flex-wrap:wrap;gap:4px 6px;align-items:center;font-size:13.5px;color:var(--muted);margin-bottom:22px;min-height:20px}
+.crumbs{display:flex;flex-wrap:wrap;gap:4px 6px;align-items:center;font-size:13.5px;color:var(--muted);margin-bottom:20px;min-height:20px}
 .crumbs button{font:inherit;background:none;border:0;padding:2px 0;color:var(--muted);cursor:pointer;text-decoration:underline;text-underline-offset:3px;text-decoration-color:var(--rule)}
 .crumbs button:hover{color:var(--text)}
-.crumbs .here{color:var(--text);font-weight:600}
+.crumbs .here{color:var(--text);font-weight:500}
 .crumbs .sep{opacity:.5}
-.panel h1{font-size:28px;line-height:1.12;margin:0 0 10px;font-weight:700;letter-spacing:-.02em}
-.panel h2{font-size:24px;line-height:1.15;margin:0 0 6px;font-weight:700;letter-spacing:-.015em}
-.panel .lede{font-size:16px;color:var(--muted);margin:0 0 14px;line-height:1.45}
-.panel .chip{display:inline-block;font-size:13px;font-style:italic;border:1px solid var(--rule);border-radius:999px;padding:3px 11px;margin:0 0 14px;color:var(--text)}
-.panel .body{font-size:15.5px;line-height:1.6}
+
+.panel h1{font-size:26px;line-height:1.15;margin:0 0 10px;font-weight:700;letter-spacing:-.01em;color:var(--gov-ink)}
+.panel h2{font-size:22px;line-height:1.2;margin:0 0 6px;font-weight:700;color:var(--gov-ink)}
+.panel .lede{font-size:15.5px;color:var(--muted);margin:0 0 14px;line-height:1.45}
+.panel .chip{display:inline-block;font-size:13px;border:1px solid var(--rule);border-radius:4px;padding:3px 10px;margin:0 0 14px;color:var(--text)}
+.panel .body{font-size:15px;line-height:1.6}
 .panel .body p{margin:0 0 12px}
 .panel .body ul{margin:0 0 12px;padding-left:18px}
 .panel .body li{margin:0 0 6px}
-.panel h3{font-size:14px;font-weight:600;color:var(--muted);margin:22px 0 10px}
+.panel h3{font-size:13.5px;font-weight:500;color:var(--muted);margin:22px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--rule)}
 .swatch{display:inline-block;width:12px;height:12px;border-radius:50%;background:var(--c);flex:none;border:1px solid var(--rule)}
 .cat-form.swatch{border:1.5px dashed var(--impl)}
 .list{display:flex;flex-direction:column;gap:2px}
-.list button{display:flex;gap:10px;align-items:center;text-align:left;font:inherit;font-size:15px;background:none;border:0;border-radius:8px;padding:7px 8px;margin:0 -8px;color:var(--text);cursor:pointer}
+.list button{display:flex;gap:10px;align-items:center;text-align:left;font:inherit;font-size:14.5px;background:none;border:0;border-radius:4px;padding:7px 8px;margin:0 -8px;color:var(--text);cursor:pointer}
 .list button:hover{background:var(--bg)}
-.legend{display:flex;flex-direction:column;gap:8px;font-size:14.5px}
+.legend{display:flex;flex-direction:column;gap:8px;font-size:14px}
 .legend div{display:flex;gap:10px;align-items:center}
 .foot{font-size:12.5px;color:var(--muted);margin-top:26px;line-height:1.5}
-.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+
+
+
 
 @media (max-width: 760px){
   body{grid-template-columns:1fr;grid-template-rows:60% 40%}
   .panel{border-left:0;border-top:1px solid var(--rule);padding:18px 18px 28px}
-  .panel h1{font-size:23px}.panel h2{font-size:21px}
-  .hint{font-size:13px;top:10px;left:10px}
+  .panel h1{font-size:22px}.panel h2{font-size:20px}
+  .hint{display:none}
+  #overlayToggle{right:10px;top:10px;font-size:13px}
   .controls{left:10px;bottom:10px}
+  .modal{padding:10px}.mcard{padding:18px}
 }
 @media (prefers-reduced-motion: reduce){
-  .summary,.header,.kids,.arrows,.node > .disc{transition:none}
+  .summary,.header,.kids,.arrows,.node > .disc,.overlay{transition:none}
 }
 </style>
 </head>
@@ -140,18 +151,20 @@ svg#map.at-root{cursor:default}
     <g id="world"></g>
   </svg>
   <div class="hint" id="hint">Select any element to explore</div>
+  
   <div class="controls" id="controls" hidden>
-    <button id="btnOut" type="button">Zoom out</button>
-    <button id="btnHome" type="button">Overview</button>
+    <button class="btn" id="btnOut" type="button">Zoom out</button>
+    <button class="btn" id="btnHome" type="button">Overview</button>
   </div>
 </div>
 <aside class="panel" id="panel" aria-live="polite">
+  
   <nav class="crumbs" id="crumbs" aria-label="Where you are"></nav>
   <div id="pbody"></div>
 </aside>
 
+
 <script>
-/* ---------- CONTENT ---------- */
 const DATA = [
 {id:'unccd',x:800,y:95,r:80,cat:'gov',label:'UNCCD',sub:'Mandate and governance',
  desc:'<p>The UN Convention to Combat Desertification covers desertification, land degradation and drought. It has 197 Parties.</p><p>Its Strategic Framework runs to 2030 with five objectives: healthier ecosystems and land degradation neutrality, better living conditions for affected people, drought resilience, global environmental benefits, and mobilising resources. Work on a post-2030 framework began at COP16.</p>',
@@ -193,7 +206,7 @@ const DATA = [
      desc:'<p>Pillar two. Mobilises and connects financing for drought resilience.</p><p>Not the same thing as DRIF, which is a separate vehicle.</p>'},
     {id:'rg-know',cat:'impl',label:'Knowledge\nPlatform',sub:'Knowledge management',
      desc:'<p>Pillar three. Knowledge sharing and learning across partner countries.</p>'},
-    {id:'rg-pledge',cat:'fin',label:'USD\n12.15bn',sub:'Associated commitments',tag:'Pledged commitments',
+    {id:'rg-pledge',cat:'fin',label:'USD\n12.15bn',sub:'Associated commitments',tag:'Pledged, not pooled',
      desc:'<ul><li>Saudi Arabia: USD 150m in grants</li><li>Islamic Development Bank: USD 1bn</li><li>OPEC Fund: USD 1bn</li><li>Arab Coordination Group: USD 10bn</li></ul><p>This is financing associated with the Riyadh drought agenda. It is not money sitting in the Partnership’s own fund.</p>'},
     {id:'rg-pool',cat:'fin',label:'Pooled\nfund',sub:'Proposed at COP17',tag:'Trustee: UN MPTF Office',
      desc:'<p>The Partnership uses a dual model: pooled contributions through a trust fund, plus aligned or bilateral financing by partner institutions.</p><p>Its first Assembly at COP17 advanced a proposed pooled fund to support around 70 countries.</p>'}
@@ -276,6 +289,9 @@ const ARROWS = [
   ['partners','countries','implementation support',true]
 ];
 
+
+const OVERLAY = /*__OVERLAY__*/null;
+
 const CAT_NAMES = {gov:'Governance and mandate',fin:'Finance and resource mobilisation',impl:'Programmes and initiatives',ext:'Financing and implementing partners',nat:'National implementation',form:'Under development'};
 
 /* ---------- LAYOUT ---------- */
@@ -299,6 +315,9 @@ function layoutKids(p){
   kids.forEach(k=>{k.parent=p;ALL.push(k);byId[k.id]=k;if(k.children)layoutKids(k);});
 }
 DATA.forEach(d=>{d.parent=ROOT;ALL.push(d);byId[d.id]=d;if(d.children)layoutKids(d);});
+
+/* ---------- OVERLAY helpers ---------- */
+function overlayOf(){return null}
 
 /* ---------- RENDER ---------- */
 const NS='http://www.w3.org/2000/svg';
@@ -328,13 +347,16 @@ function drawHeader(n,g){
   const fs=Math.min(.078*n.r, 1.15*n.r/(txt.length*.56));
   const t=el('text',{x:n.x,y:n.y-.8*n.r+fs*.35,'font-size':fs},g);t.textContent=txt;
 }
+function drawOverlayRing(){}function drawOverlayBadges(){}
 function renderNode(n,parent){
   const g=el('g',{class:`node cat-${n.cat}${n.key?' key':''}`,role:'button',tabindex:0,'aria-label':flat(n)+(n.children?', zoom in':', show details')},parent);
   n.g=g;
+  if(OVERLAY) drawOverlayRing(n,el('g',{class:'overlay'},g));
   el('circle',{cx:n.x,cy:n.y,r:n.r,class:'disc'},g);
   drawSummary(n,el('g',{class:'summary'},g));
+  if(n.children) drawHeader(n,el('g',{class:'header'},g));
+  if(OVERLAY) drawOverlayBadges(n,el('g',{class:'overlay overlayb'},g));
   if(n.children){
-    drawHeader(n,el('g',{class:'header'},g));
     n.kidsG=el('g',{class:'kids'},g);
     n.children.forEach(c=>renderNode(c,n.kidsG));
   }
@@ -346,7 +368,7 @@ const arrowsG=el('g',{class:'arrows'},world);
 ARROWS.forEach(([a,b,label,dash])=>{
   const A=byId[a],B=byId[b];
   const dx=B.x-A.x,dy=B.y-A.y,d=Math.hypot(dx,dy),ux=dx/d,uy=dy/d;
-  const x1=A.x+ux*(A.r+8),y1=A.y+uy*(A.r+8),x2=B.x-ux*(B.r+8),y2=B.y-uy*(B.r+8);
+  const x1=A.x+ux*(A.r+12),y1=A.y+uy*(A.r+12),x2=B.x-ux*(B.r+12),y2=B.y-uy*(B.r+12);
   el('line',{x1,y1,x2,y2,class:dash?'dash':'','marker-end':'url(#arrowhead)'},arrowsG);
   if(label){const t=el('text',{x:(x1+x2)/2+(Math.abs(uy)>.8?38:0),y:(y1+y2)/2+(Math.abs(uy)>.8?5:-10)},arrowsG);t.textContent=label;}
 });
@@ -354,15 +376,15 @@ const nodesG=el('g',{},world);
 DATA.forEach(d=>renderNode(d,nodesG));
 
 /* ---------- VIEW ---------- */
-const WORLD={x:40,y:0,w:1520,h:1015};
-let vb={...WORLD}, raf=0, focus=ROOT, selected=null;
+const WORLD={x:40,y:-20,w:1520,h:1040};
+let vb={...WORLD}, raf=0, focus=ROOT, selected=null, overlayOn=false;
 function fit(b){
   const ar=(svg.clientWidth||1)/(svg.clientHeight||1);
   let {x,y,w,h}=b;
   if(w/h<ar){const nw=h*ar;x-=(nw-w)/2;w=nw;}else{const nh=w/ar;y-=(nh-h)/2;h=nh;}
   return {x,y,w,h};
 }
-function boxOf(n){return n===ROOT?fit(WORLD):fit({x:n.x-n.r*1.07,y:n.y-n.r*1.07,w:n.r*2.14,h:n.r*2.14});}
+function boxOf(n){return n===ROOT?fit(WORLD):fit({x:n.x-n.r*1.12,y:n.y-n.r*1.12,w:n.r*2.24,h:n.r*2.24});}
 function setVB(b){vb=b;svg.setAttribute('viewBox',`${b.x} ${b.y} ${b.w} ${b.h}`);}
 function animateTo(t){
   cancelAnimationFrame(raf);
@@ -403,9 +425,7 @@ function zoomTo(n){focus=n;applyState();animateTo(boxOf(n));renderCrumbs();}
 function onNode(n){
   if(n.children){
     if(focus===n){zoomOut();return;}
-    selected=null;
-    zoomTo(n);
-    showPanel(n);
+    selected=null;zoomTo(n);showPanel(n);
   }else{
     selected=n;
     if(focus!==n.parent)zoomTo(n.parent);else applyState();
@@ -416,7 +436,6 @@ function zoomOut(){if(focus===ROOT)return;selected=null;const p=focus.parent;zoo
 svg.addEventListener('click',zoomOut);
 document.getElementById('btnOut').addEventListener('click',zoomOut);
 document.getElementById('btnHome').addEventListener('click',()=>{selected=null;zoomTo(ROOT);showPanel(ROOT);});
-document.addEventListener('keydown',e=>{if(e.key==='Escape')zoomOut();});
 new ResizeObserver(()=>{cancelAnimationFrame(raf);setVB(boxOf(focus));}).observe(svg);
 
 /* ---------- PANEL ---------- */
@@ -431,11 +450,12 @@ function renderCrumbs(){
     else{const b=document.createElement('button');b.type='button';b.textContent=label;b.onclick=()=>{selected=null;zoomTo(n);showPanel(n);};crumbs.appendChild(b);}
   });
 }
-function itemButton(n){
+function itemButton(n,extra){
   const b=document.createElement('button');b.type='button';
-  b.innerHTML=`<span class="swatch cat-${n.cat}"></span><span>${flat(n)}</span>`;
+  b.innerHTML=`<span class="swatch cat-${n.cat}"></span><span>${flat(n)}</span>${extra||''}`;
   b.onclick=()=>onNode(n);return b;
 }
+function overlaySection(){return null}
 function showPanel(n){
   renderCrumbs();
   pbody.innerHTML='';
@@ -444,8 +464,9 @@ function showPanel(n){
     <p class="lede">An overview of how mandates, financing and programmes connect, from the Convention to national implementation.</p>
     <div class="body"><p>The map reads from top to bottom. The Convention and its governing bodies set the mandate; the finance and resource mobilisation architecture, together with financing partners, channels resources into thematic programmes; and Country Parties implement them with the support of implementing partners.</p>
     <p>Select any element to view its components. Select an individual component for a description. To return, select an empty area, press Escape or use the navigation buttons.</p></div>
-    <h3>Legend</h3><div class="legend">${Object.entries(CAT_NAMES).map(([k,v])=>`<div><span class="swatch cat-${k}"></span>${v}</div>`).join('')}</div>
-    <h3>Main components</h3>`;
+    <h3>Legend</h3><div class="legend">${Object.entries(CAT_NAMES).map(([k,v])=>`<div><span class="swatch cat-${k}"></span>${v}</div>`).join('')}</div>`;
+
+    const h3=document.createElement('h3');h3.textContent='Main components';pbody.appendChild(h3);
     const l=document.createElement('div');l.className='list';DATA.forEach(d=>l.appendChild(itemButton(d)));pbody.appendChild(l);
     const f=document.createElement('p');f.className='foot';f.textContent='Source: UNCCD official sources, as of September 2026. Financial figures are classified by type: capitalised fund, pledged commitment, project portfolio or mobilisation target.';pbody.appendChild(f);
     return;
@@ -454,6 +475,7 @@ function showPanel(n){
   if(n.sub){const p=document.createElement('p');p.className='lede';p.textContent=n.sub;pbody.appendChild(p);}
   if(n.tag){const c=document.createElement('span');c.className='chip';c.textContent=n.tag;pbody.appendChild(c);}
   const body=document.createElement('div');body.className='body';body.innerHTML=n.desc||'';pbody.appendChild(body);
+  const ws=overlaySection(n);if(ws)pbody.appendChild(ws);
   if(n.children){
     const h3=document.createElement('h3');h3.textContent='Components';pbody.appendChild(h3);
     const l=document.createElement('div');l.className='list';n.children.forEach(c=>l.appendChild(itemButton(c)));pbody.appendChild(l);
@@ -462,6 +484,8 @@ function showPanel(n){
     const l=document.createElement('div');l.className='list';l.appendChild(itemButton(n.parent));pbody.appendChild(l);
   }
 }
+
+document.addEventListener('keydown',e=>{if(e.key==='Escape')zoomOut();});
 
 setVB(boxOf(ROOT));
 applyState();
